@@ -73,23 +73,137 @@ def genbar(width, height, file_name):
 
 def csvtojson(file_name):
     df = pd.read_csv(file_name)
+    print df
     nodelist = []
     jsondata = {}
     jsondata["nodes"] = []
     jsondata["links"] = []
     for i in range(0,2):
-        if df[0][i] not in nodelist:
-            nodelist.append(df[0][i])
-        if df[1][i] not in nodelist:
-            nodelist.append(df[1][i])
+        print df["destination"][i]
+        if df["source"][i] not in nodelist:
+            nodelist.append(df["source"][i])
+        if df["destination"][i] not in nodelist:
+            nodelist.append(df["destination"][i])
     for i in range(len(nodelist)):
-        jsondata["nodes"].append{"name":nodelist[i]}
+        jsondata["nodes"].append({"name":nodelist[i]})
 
-    for i in range(len(df[1])):
+    for i in range(len(df["destination"])):
         jsondata["links"].append({
-        "source": df[0][i],
-        "destination": df[1][i],
-        "colour": df[2][i],
+        "source": df["source"][i],
+        "destination": df["destination"][i],
+        "colour": df["colour"][i],
+        "size": 5,
         "value": 5
         })
     return jsondata
+
+def genforced_layout(width, height, file_name, stroke_width):
+    temp = ""
+    temp += '<script src="d3.v4.min.js"></script>\n'
+    temp += '<style>\n'
+    temp += '\n'
+    temp += '.link {\n'
+    temp += ' stroke: #777;\n'
+    temp += ' stroke-opacity: 0.3;\n'
+    temp += ' stroke-width: '+str(stroke_width)+'px;\n'
+    temp += '}\n'
+
+    temp += '.node circle {\n'
+    temp += ' fill: #ccc;\n'
+    temp += ' stroke: #000;\n'
+    temp += ' stroke-width: 1.5px;\n'
+    temp += '}\n'
+
+    temp += '.node text {\n'
+    temp += ' display: none;\n'
+    temp += ' font: 10px sans-serif;\n'
+    temp += '}\n'
+
+    temp += '.node:hover circle {\n'
+    temp += ' fill: #000;\n'
+    temp += '}\n'
+
+    temp += '.node:hover text {\n'
+    temp += ' display: inline;\n'
+    temp += '}\n'
+
+    temp += '.cell {\n'
+    temp += ' fill: none;\n'
+    temp += ' pointer-events: all;\n'
+    temp += '}\n'
+
+    temp += ' </style>\n'
+    temp += ' <body>\n'
+
+    temp += ' <script>\n'
+    temp += ' var width = '+str(width)+',\n'
+    temp += '       height = '+str(height)+',\n'
+    temp += '       color = d3.scale.category20c();\n'
+
+    temp += 'var svg = d3.select("body").append("svg")\n'
+    temp += '   .attr("width", width)\n'
+    temp += '   .attr("height", height);\n'
+
+    temp += 'var force = d3.layout.force()\n'
+    temp += '   .gravity(0.1)\n'
+    temp += '   .charge(-120)\n'
+    temp += '   .linkDistance(30)\n'
+    temp += '   .size([width, height]);\n'
+
+    temp += 'var voronoi = d3.geom.voronoi()\n'
+    temp += '   .x(function(d) { return d.x; })\n'
+    temp += '   .y(function(d) { return d.y; })\n'
+    temp += '   .clipExtent([[0, 0], [width, height]]);\n'
+
+    temp += 'd3.json("graph.json", function(error, json) {\n'
+    temp += ' if (error) throw error;\n'
+    temp += ' console.log(json.nodes);\n'
+    temp += ' console.log(json.links);\n'
+    temp += ' force\n'
+    temp += '     .nodes(json.nodes)\n'
+    temp += '     .links(json.links)\n'
+    temp += '     .start();\n'
+
+    temp += ' var link = svg.selectAll(".link")\n'
+    temp += '     .data(json.links)\n'
+    temp += '     .enter().append("line")\n'
+    temp += '     .attr("class", "link")\n'
+    temp += '     .style("stroke", function(d) { return d.color; });//new\n'
+
+    temp += ' var node = svg.selectAll(".node")\n'
+    temp += '     .data(json.nodes)\n'
+    temp += '     .enter().append("g")\n'
+    temp += '     .attr("class", "node")\n'
+    temp += '     .call(force.drag);\n'
+
+    temp += ' var circle = node.append("circle")\n'
+    temp += '     .attr("r", function(d) { return d.size; })\n'
+    temp += '     .style("fill", function(d) { return d.color; }); //new\n'
+
+    temp += ' var label = node.append("text")\n'
+    temp += '     .attr("dy", ".35em")\n'
+    temp += '     .text(function(d) { return d.name; });\n'
+
+    temp += ' var cell = node.append("path")\n'
+    temp += '     .attr("class", "cell");\n'
+    temp += ' force.on("tick", function() {\n'
+    temp += '   cell\n'
+    temp += '       .data(voronoi(json.nodes))\n'
+    temp += '       .attr("d", function(d) { return d.length ? "M" + d.join("L") : null; });\n'
+
+    temp += '   link\n'
+    temp += '       .attr("x1", function(d) { return d.source.x; })\n'
+    temp += '       .attr("y1", function(d) { return d.source.y; })\n'
+    temp += '       .attr("x2", function(d) { return d.target.x; })\n'
+    temp += '       .attr("y2", function(d) { return d.target.y; });\n'
+
+    temp += '   circle\n'
+    temp += '       .attr("cx", function(d) { return d.x; })\n'
+    temp += '       .attr("cy", function(d) { return d.y; });\n'
+
+    temp += '   label\n'
+    temp += '       .attr("x", function(d) { return d.x + 8; })\n'
+    temp += '       .attr("y", function(d) { return d.y; });\n'
+    temp += ' });\n'
+    temp += ' }\n'
+    return temp

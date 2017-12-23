@@ -48,6 +48,7 @@ if __name__ == "__main__":
                             )
 
         parser.add_argument('-stroke_width', action='store', dest='stroke_width',
+                            default=1.5,
                             type=int,
                             help='Specify the stroke_width of links in pixels')
 
@@ -83,11 +84,16 @@ if __name__ == "__main__":
                     except OSError as exc: # Guard against race condition
                         if exc.errno != errno.EEXIST:
                             raise
+                with open(results.output_folder+"/graph.json", "wb") as js:
+                    js.write(str(graphmod.csvtojson(results.file_name)))
                 op = open(results.output_folder+"/"+results.output_file, "wb")
             else:
-                with open(results.file+".json", "wb") as js:
-                    js.write(graphmod.csvtojson(results.file_name))
+                with open("graph.json", "wb") as js:
+                    js.write(str(graphmod.csvtojson(results.file_name)))
                 op = open(results.output_file, "w")
-
+            skeleton += graphmod.genhead(results.title)
+            skeleton += graphmod.genforced_layout(results.width, results.height, results.file_name, results.stroke_width)
+            op.write(skeleton)
+            op.close()
         else:
             print "chart_type not supported yet!"
