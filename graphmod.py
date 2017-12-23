@@ -73,33 +73,36 @@ def genbar(width, height, file_name):
 
 def csvtojson(file_name):
     df = pd.read_csv(file_name)
-    print df
+    #print df["colour"]
     nodelist = []
     jsondata = {}
     jsondata["nodes"] = []
     jsondata["links"] = []
     for i in range(0,2):
-        print df["destination"][i]
+    #    print df["destination"][i]
         if df["source"][i] not in nodelist:
             nodelist.append(df["source"][i])
         if df["destination"][i] not in nodelist:
             nodelist.append(df["destination"][i])
     for i in range(len(nodelist)):
-        jsondata["nodes"].append({"name":nodelist[i]})
+        jsondata["nodes"].append({
+        "name":nodelist[i],
+        "colour": df["colour"][0],
+        "size": 5
+        })
+    # to add "colour": df["colour"][0],
 
     for i in range(len(df["destination"])):
         jsondata["links"].append({
-        "source": df["source"][i],
-        "destination": df["destination"][i],
-        "colour": df["colour"][i],
-        "size": 5,
+        "source": nodelist.index(df["source"][i]),
+        "target": nodelist.index(df["destination"][i]),
         "value": 5
         })
     return jsondata
 
 def genforced_layout(width, height, file_name, stroke_width):
     temp = ""
-    temp += '<script src="d3.v4.min.js"></script>\n'
+    temp += '<script src="d3.v3.min.js"></script>\n'
     temp += '<style>\n'
     temp += '\n'
     temp += '.link {\n'
@@ -205,5 +208,8 @@ def genforced_layout(width, height, file_name, stroke_width):
     temp += '       .attr("x", function(d) { return d.x + 8; })\n'
     temp += '       .attr("y", function(d) { return d.y; });\n'
     temp += ' });\n'
-    temp += ' }\n'
+    temp += ' });\n'
+    temp += '</script>'
+    temp += '</body>'
+    temp += '</html>'
     return temp

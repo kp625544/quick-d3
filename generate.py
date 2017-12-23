@@ -1,5 +1,6 @@
 import argparse
 import os
+import json
 import graphmod
 '''
 Coded by Hydra
@@ -79,17 +80,17 @@ if __name__ == "__main__":
                 if not os.path.exists(os.path.dirname(results.output_folder+'/'+results.output_file)):
                     try:
                         os.makedirs(os.path.dirname(results.output_folder+'/'+results.output_file))
-                        os.system("cp d3.v4.min.js ./"+results.output_folder+"/")
+                        os.system("cp d3.v3.min.js ./"+results.output_folder+"/")
                         os.system("cp "+results.file_name+" ./"+results.output_folder+"/")
                     except OSError as exc: # Guard against race condition
                         if exc.errno != errno.EEXIST:
                             raise
                 with open(results.output_folder+"/graph.json", "wb") as js:
-                    js.write(str(graphmod.csvtojson(results.file_name)))
+                    json.dump(graphmod.csvtojson(results.file_name), js)
                 op = open(results.output_folder+"/"+results.output_file, "wb")
             else:
                 with open("graph.json", "wb") as js:
-                    js.write(str(graphmod.csvtojson(results.file_name)))
+                    json.dump(graphmod.csvtojson(results.file_name), js)
                 op = open(results.output_file, "w")
             skeleton += graphmod.genhead(results.title)
             skeleton += graphmod.genforced_layout(results.width, results.height, results.file_name, results.stroke_width)
