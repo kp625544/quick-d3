@@ -35,7 +35,7 @@ if __name__ == "__main__":
 
         parser.add_argument('-chart_type', action="store", dest='chart_type',
                             default="bar",
-                            help='Specify the chart_type for the project e.g bar',
+                            help='Specify the chart_type for the project (supported: bar, forced)',
                             )
 
         parser.add_argument('-o', action="store", dest='output_file',
@@ -46,6 +46,10 @@ if __name__ == "__main__":
         parser.add_argument('-of', action="store", dest='output_folder',
                             help='Specify the output_folder for the project ',
                             )
+
+        parser.add_argument('-stroke_width', action='store', dest='stroke_width',
+                            type=int,
+                            help='Specify the stroke_width of links in pixels')
 
         parser.add_argument('--version', action='version', version='%(prog)s 1.0')
 
@@ -69,3 +73,21 @@ if __name__ == "__main__":
             skeleton += graphmod.genbar(results.width, results.height, results.file_name)
             op.write(skeleton)
             op.close()
+        elif results.chart_type == "forced":
+            if results.output_folder:
+                if not os.path.exists(os.path.dirname(results.output_folder+'/'+results.output_file)):
+                    try:
+                        os.makedirs(os.path.dirname(results.output_folder+'/'+results.output_file))
+                        os.system("cp d3.v4.min.js ./"+results.output_folder+"/")
+                        os.system("cp "+results.file_name+" ./"+results.output_folder+"/")
+                    except OSError as exc: # Guard against race condition
+                        if exc.errno != errno.EEXIST:
+                            raise
+                op = open(results.output_folder+"/"+results.output_file, "wb")
+            else:
+                with open(results.file+".json", "wb") as js:
+                    js.write(graphmod.csvtojson(results.file_name))
+                op = open(results.output_file, "w")
+
+        else:
+            print "chart_type not supported yet!"

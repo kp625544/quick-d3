@@ -1,4 +1,4 @@
-
+import pandas as pd
 
 def genhead(title):
     return '<!DOCTYPE html>\n<meta charset="utf-8">\n<head>\n<title>'+title+'</title></head>\n'
@@ -70,3 +70,26 @@ def genbar(width, height, file_name):
     temp += '</script>\n'
     temp += '</body>\n'
     return temp
+
+def csvtojson(file_name):
+    df = pd.read_csv(file_name)
+    nodelist = []
+    jsondata = {}
+    jsondata["nodes"] = []
+    jsondata["links"] = []
+    for i in range(0,2):
+        if df[0][i] not in nodelist:
+            nodelist.append(df[0][i])
+        if df[1][i] not in nodelist:
+            nodelist.append(df[1][i])
+    for i in range(len(nodelist)):
+        jsondata["nodes"].append{"name":nodelist[i]}
+
+    for i in range(len(df[1])):
+        jsondata["links"].append({
+        "source": df[0][i],
+        "destination": df[1][i],
+        "colour": df[2][i],
+        "value": 5
+        })
+    return jsondata
