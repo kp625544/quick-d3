@@ -3,8 +3,9 @@
 
 ##                       Running Example
 
+![Example1](https://github.com/kp625544/quick-d3/blob/master/forced_layout.gif)
 
-![Example](https://github.com/kp625544/quick-d3/blob/master/example.gif)
+![Example2](https://github.com/kp625544/quick-d3/blob/master/example.gif)
 
 
 
